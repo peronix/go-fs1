@@ -35,7 +35,7 @@ type Person struct {
 		MiddleName          string         `json:"middleName"`
 		GoesByName          string         `json:"goesByName"`
 		FormerName          string         `json:"formerName"`
-		Gender              string         `json:"genderName"`
+		Gender              string         `json:"gender"`
 		DateOfBirth         string         `json:"dateOfBirth"`
 		MaritalStatus       string         `json:"maritalStatus"`
 		HouseholdMemberType PrimaryAndName `json:"householdMemberType"`
@@ -54,8 +54,8 @@ type Person struct {
 		School             PrimaryAndName `json:"school"`
 		Denomination       PrimaryAndName `json:"denomination"`
 		FormerChurch       string         `json:"formerChurch"`
-		BarCode            string         `json:"barcode"`
-		MemberEnvolopeCode string         `json:"memberEnveolopeCode"`
+		BarCode            string         `json:"barCode"`
+		MemberEnvolopeCode string         `json:"memberEnvelopeCode"`
 		DefaultTagComment  string         `json:"defaultTagComment"`
 		Weblink            struct {
 			UserId         string `json:"userID"`
@@ -73,24 +73,24 @@ type Person struct {
 type Address struct {
 	Address struct {
 		Primary
-		Household               Primary        `json:"household"`
-		Person                  Primary        `json:"person"`
-		AddressType             PrimaryAndName `json:"addressType"`
-		Address1                string         `json:"address1"`
-		Address2                string         `json:"address2"`
-		Address3                string         `json:"address3"`
-		City                    string         `json:"city"`
-		PostalCode              string         `json:"postalCode"`
-		County                  string         `json:"county"`
-		Country                 string         `json:"country"`
-		StProvince              string         `json:"stProvince"`
-		CarrierRoute            string         `json:"carrierRoute"`
-		DeliveryPoint           string         `json:"deliveryPoint"`
-		AddressDate             string         `json:"addressDate"`
-		AddressComment          string         `json:"addressComment"`
-		USPSVerified            string         `json:"uspsVerified"`
-		AddressVerifiedDate     string         `json:"addressVerifiedDate"`
-		LastVerificationAttempt string         `json:"lastVerificationAttempt"`
+		Household                   Primary        `json:"household"`
+		Person                      Primary        `json:"person"`
+		AddressType                 PrimaryAndName `json:"addressType"`
+		Address1                    string         `json:"address1"`
+		Address2                    string         `json:"address2"`
+		Address3                    string         `json:"address3"`
+		City                        string         `json:"city"`
+		PostalCode                  string         `json:"postalCode"`
+		County                      string         `json:"county"`
+		Country                     string         `json:"country"`
+		StProvince                  string         `json:"stProvince"`
+		CarrierRoute                string         `json:"carrierRoute"`
+		DeliveryPoint               string         `json:"deliveryPoint"`
+		AddressDate                 string         `json:"addressDate"`
+		AddressComment              string         `json:"addressComment"`
+		USPSVerified                string         `json:"uspsVerified"`
+		AddressVerifiedDate         string         `json:"addressVerifiedDate"`
+		LastVerificationAttemptDate string         `json:"lastVerificationAttemptDate"`
 		Audit
 	} `json:"address"`
 }
@@ -100,7 +100,7 @@ type Communication struct {
 		Household                Primary        `json:"household"`
 		Person                   Primary        `json:"person"`
 		CommunicationType        PrimaryAndName `json:"communicationType"`
-		CommunicationTypeGeneral string         `json:"communicationTypeGeneral"`
+		CommunicationGeneralType string         `json:"communicationGeneralType"`
 		ComminicationValue       string         `json:"communicationValue"`
 		SearchComminicationValue string         `json:"searchCommunicationValue"`
 		Preferred                string         `json:"preferred"`
