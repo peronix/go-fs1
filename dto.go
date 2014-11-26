@@ -44,7 +44,7 @@ type Person struct {
 			PrimaryAndName
 			Comment   string         `json:"comment"`
 			Date      string         `json:"date"`
-			SubStatus PrimaryAndName `json;"subStatus"`
+			SubStatus PrimaryAndName `json:"subStatus"`
 		} `json:"status"`
 		Occupation struct {
 			PrimaryAndName
@@ -55,7 +55,7 @@ type Person struct {
 		Denomination       PrimaryAndName `json:"denomination"`
 		FormerChurch       string         `json:"formerChurch"`
 		BarCode            string         `json:"barcode"`
-		MemberEnvolopeCode string         `json;"memberEnveolopeCode"`
+		MemberEnvolopeCode string         `json:"memberEnveolopeCode"`
 		DefaultTagComment  string         `json:"defaultTagComment"`
 		Weblink            struct {
 			UserId         string `json:"userID"`
