@@ -172,6 +172,9 @@ func (fs *FsOneInterface) createObject(requestUrl, objectName string, data inter
 	if err != nil {
 		return "", err
 	}
+	if fs.debug {
+		fmt.Println("\n" + string(dataBytes))
+	}
 	json, err := fs.makeRequest(fs.consumer.PostJson(
 		url, string(dataBytes), fs.accessToken,
 	))
