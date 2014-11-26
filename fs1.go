@@ -1,6 +1,8 @@
 package fs1
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -9,6 +11,7 @@ import (
 )
 
 type FsOneInterface struct {
+	debug        bool
 	churchCode   string
 	basePath     string
 	callbackUrl  string
@@ -22,7 +25,24 @@ type Fund struct {
 	Name string
 }
 
+type Household struct {
+	Household struct {
+		Id                        string `json:"@id"`
+		Uri                       string `json:"@uri"`
+		OldId                     string `json:"@oldID"`
+		HCode                     string `json:"@hCode"`
+		HouseholdName             string `json:"householdName"`
+		HouseholdSortName         string `json:"householdSortName"`
+		HouseholdFirstName        string `json:"householdFirstName"`
+		LastSecurityAuthorization string `json:"lastSecurityAuthorization"`
+		LastActivityDate          string `json:"lastActivityDate"`
+		CreatedDate               string `json:"createdDate"`
+		LastUpdatedDate           string `json:"lastUpdatedDate"`
+	} `json:"household"`
+}
+
 func NewFsOneInterface(consumerKey, consumerSecret, consumerCode, callbackUrl string, debug bool) (fs FsOneInterface) {
+	fs.debug = debug
 	fs.callbackUrl = callbackUrl
 	fs.basePath = "https://" + consumerCode + ".fellowshiponeapi.com"
 	fs.consumer = oauth.NewConsumer(
@@ -38,11 +58,17 @@ func NewFsOneInterface(consumerKey, consumerSecret, consumerCode, callbackUrl st
 	return fs
 }
 
-func makeRequest(response *http.Response, err error) (*simplejson.Json, error) {
+func (fs *FsOneInterface) makeRequest(response *http.Response, err error) (*simplejson.Json, error) {
 	if err != nil {
+		if fs.debug {
+			fmt.Printf("Respone: %#v\n", err.Error())
+		}
 		return &simplejson.Json{}, err
 	}
 	defer response.Body.Close()
+	if fs.debug {
+		fmt.Printf("Respone: %#v\n", response)
+	}
 	bits, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return &simplejson.Json{}, err
@@ -94,7 +120,7 @@ func (fs *FsOneInterface) GetAccessToken(verificationCode string) (string, strin
 func (fs *FsOneInterface) GetFundList() ([]Fund, error) {
 	url := fs.basePath + "/giving/v1/funds.json"
 
-	json, err := makeRequest(fs.consumer.Get(
+	json, err := fs.makeRequest(fs.consumer.Get(
 		url, map[string]string{}, fs.accessToken,
 	))
 	if err != nil {
@@ -115,7 +141,7 @@ func (fs *FsOneInterface) GetFundList() ([]Fund, error) {
 func (fs *FsOneInterface) FindPerson(name, address string) (string, error) {
 	url := fs.basePath + "/v1/People/Search.json"
 
-	json, err := makeRequest(fs.consumer.Get(
+	json, err := fs.makeRequest(fs.consumer.Get(
 		url, map[string]string{
 			"searchFor": name,
 			"address":   address,
@@ -135,67 +161,35 @@ func (fs *FsOneInterface) FindPerson(name, address string) (string, error) {
 	return json.Get("person").GetIndex(0).Get("@id").MustString(""), nil
 }
 
-func (fs *FsOneInterface) NewHousehold() (*simplejson.Json, error) {
-	return fs.newObject("/v1/Households/New.json")
+func (fs *FsOneInterface) CreateHousehold(data interface{}) (string, error) {
+	return fs.createObject("/v1/Households.json", "household", data)
 }
 
-func (fs *FsOneInterface) NewPerson() (*simplejson.Json, error) {
-	return fs.newObject("/v1/People/New.json")
-}
-
-func (fs *FsOneInterface) NewAddress() (*simplejson.Json, error) {
-	return fs.newObject("/v1/Addresses/New.json")
-}
-
-func (fs *FsOneInterface) NewCommunication() (*simplejson.Json, error) {
-	return fs.newObject("/v1/Communications/New.json")
-}
-
-func (fs *FsOneInterface) NewContribution() (*simplejson.Json, error) {
-	return fs.newObject("/giving/v1/contributionreceipts/new.json")
-}
-
-func (fs *FsOneInterface) newObject(requestUrl string) (*simplejson.Json, error) {
-	url := fs.basePath + requestUrl
-
-	json, err := makeRequest(fs.consumer.Get(
-		url, map[string]string{}, fs.accessToken,
-	))
-	if err != nil {
-		return &simplejson.Json{}, err
-	}
-	return json, nil
-}
-
-func (fs *FsOneInterface) CreateHousehold(data *simplejson.Json) (string, error) {
-	return fs.createObject("/v1/Households.json", "person", data)
-}
-
-func (fs *FsOneInterface) CreatePerson(data *simplejson.Json) (string, error) {
+func (fs *FsOneInterface) CreatePerson(data interface{}) (string, error) {
 	return fs.createObject("/v1/People.json", "person", data)
 }
 
-func (fs *FsOneInterface) CreateAddress(data *simplejson.Json) (string, error) {
+func (fs *FsOneInterface) CreateAddress(data interface{}) (string, error) {
 	return fs.createObject("/v1/Addresses.json", "address", data)
 }
 
-func (fs *FsOneInterface) CreateCommunication(data *simplejson.Json) (string, error) {
+func (fs *FsOneInterface) CreateCommunication(data interface{}) (string, error) {
 	return fs.createObject("/v1/Communications.json", "communication", data)
 }
 
-func (fs *FsOneInterface) CreateContribution(data *simplejson.Json) (string, error) {
+func (fs *FsOneInterface) CreateContribution(data interface{}) (string, error) {
 	return fs.createObject("/giving/v1/contributionreceipts.json", "contributionReceipt", data)
 }
 
-func (fs *FsOneInterface) createObject(requestUrl, objectName string, data *simplejson.Json) (string, error) {
+func (fs *FsOneInterface) createObject(requestUrl, objectName string, data interface{}) (string, error) {
 	url := fs.basePath + requestUrl
 
-	dataStr, err := data.Encode()
+	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return "", err
 	}
-	json, err := makeRequest(fs.consumer.PostJson(
-		url, string(dataStr), fs.accessToken,
+	json, err := fs.makeRequest(fs.consumer.PostJson(
+		url, string(dataBytes), fs.accessToken,
 	))
 	if err != nil {
 		return "", err
