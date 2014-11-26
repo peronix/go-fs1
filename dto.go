@@ -18,6 +18,21 @@ type Audit struct {
 // 	LastActivityDate          string `json:"lastActivityDate"`
 // }
 
+type Household struct {
+	Household struct {
+		Primary
+		OldId                     string `json:"@oldID"`
+		HCode                     string `json:"@hCode"`
+		HouseholdName             string `json:"householdName"`
+		HouseholdSortName         string `json:"householdSortName"`
+		HouseholdFirstName        string `json:"householdFirstName"`
+		LastSecurityAuthorization string `json:"lastSecurityAuthorization"`
+		LastActivityDate          string `json:"lastActivityDate"`
+		CreatedDate               string `json:"createdDate"`
+		LastUpdatedDate           string `json:"lastUpdatedDate"`
+	} `json:"household"`
+}
+
 type Person struct {
 	Person struct {
 		Primary
@@ -35,7 +50,7 @@ type Person struct {
 		MiddleName          string         `json:"middleName"`
 		GoesByName          string         `json:"goesByName"`
 		FormerName          string         `json:"formerName"`
-		Gender              string         `json:"genderName"`
+		Gender              string         `json:"gender"`
 		DateOfBirth         string         `json:"dateOfBirth"`
 		MaritalStatus       string         `json:"maritalStatus"`
 		HouseholdMemberType PrimaryAndName `json:"householdMemberType"`
@@ -54,8 +69,8 @@ type Person struct {
 		School             PrimaryAndName `json:"school"`
 		Denomination       PrimaryAndName `json:"denomination"`
 		FormerChurch       string         `json:"formerChurch"`
-		BarCode            string         `json:"barcode"`
-		MemberEnvolopeCode string         `json:"memberEnveolopeCode"`
+		BarCode            string         `json:"barCode"`
+		MemberEnvelopeCode string         `json:"memberEnvelopeCode"`
 		DefaultTagComment  string         `json:"defaultTagComment"`
 		Weblink            struct {
 			UserId         string `json:"userID"`
@@ -100,11 +115,48 @@ type Communication struct {
 		Household                Primary        `json:"household"`
 		Person                   Primary        `json:"person"`
 		CommunicationType        PrimaryAndName `json:"communicationType"`
-		CommunicationTypeGeneral string         `json:"communicationTypeGeneral"`
+		CommunicationGeneralType string         `json:"communicationGeneralType"`
 		ComminicationValue       string         `json:"communicationValue"`
 		SearchComminicationValue string         `json:"searchCommunicationValue"`
 		Preferred                string         `json:"preferred"`
 		CommunicationComment     string         `json:"communicationComment"`
 		Audit
 	} `json:"communication"`
+}
+
+type ContributionReceipt struct {
+	ContributionReceipt struct {
+		Primary
+		OldId               string         `json:"@oldID"`
+		AccountReference    string         `json:"@accountReference"`
+		Amount              string         `json:"@amount"`
+		Fund                PrimaryAndName `json:"fund"`
+		SubFund             PrimaryAndName `json:"subFund"`
+		PledgeDrive         PrimaryAndName `json:"pledgeDrive"`
+		Household           Primary        `json:"household"`
+		Person              Primary        `json:"person"`
+		Account             Primary        `json:"account"`
+		ReferenceImage      Primary        `json:"referenceImage"`
+		Batch               PrimaryAndName `json:"batch"`
+		ActivityInstance    Primary        `json:"activityInstance"`
+		ContributionType    PrimaryAndName `json:"contributionType"`
+		ContributionSubType PrimaryAndName `json:"contributionSubType"`
+		ReceivedDate        string         `json:"@receivedDate"`
+		TransmitDate        string         `json:"@transmitDate"`
+		ReturnDate          string         `json:"@returnDate"`
+		RetransmitDate      string         `json:"@retransmitDate"`
+		GlPostDate          string         `json:"@glPostDate"`
+		IsSplit             string         `json:"@isSplit"`
+		AddressVerification string         `json:"@addressVerification"`
+		Memo                string         `json:"@memo"`
+		StatedValue         string         `json:"@statedValue"`
+		TrueValue           string         `json:"@trueValue"`
+		Thank               string         `json:"@thank"`
+		ThankedDate         string         `json:"@thankedDate"`
+		IsMatched           string         `json:"@isMatched"`
+		CreatedDate         string         `json:"@createdDate"`
+		CreatedByPerson     Primary        `json:"createdByPerson"`
+		LastUpdatedDate     string         `json:"@lastUpdatedDate"`
+		LastUpdatedByPerson Primary        `json:"lastUpdatedByPerson"`
+	} `json:"contributionReceipt"`
 }
