@@ -25,22 +25,6 @@ type Fund struct {
 	Name string
 }
 
-type Household struct {
-	Household struct {
-		Id                        string `json:"@id"`
-		Uri                       string `json:"@uri"`
-		OldId                     string `json:"@oldID"`
-		HCode                     string `json:"@hCode"`
-		HouseholdName             string `json:"householdName"`
-		HouseholdSortName         string `json:"householdSortName"`
-		HouseholdFirstName        string `json:"householdFirstName"`
-		LastSecurityAuthorization string `json:"lastSecurityAuthorization"`
-		LastActivityDate          string `json:"lastActivityDate"`
-		CreatedDate               string `json:"createdDate"`
-		LastUpdatedDate           string `json:"lastUpdatedDate"`
-	} `json:"household"`
-}
-
 func NewFsOneInterface(consumerKey, consumerSecret, consumerCode, callbackUrl string, debug bool) (fs FsOneInterface) {
 	fs.debug = debug
 	fs.callbackUrl = callbackUrl
@@ -187,6 +171,9 @@ func (fs *FsOneInterface) createObject(requestUrl, objectName string, data inter
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return "", err
+	}
+	if fs.debug {
+		fmt.Println("\n" + string(dataBytes))
 	}
 	json, err := fs.makeRequest(fs.consumer.PostJson(
 		url, string(dataBytes), fs.accessToken,
