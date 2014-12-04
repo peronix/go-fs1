@@ -49,15 +49,10 @@ func (fs *FsOneInterface) makeRequest(response *http.Response, err error) (*simp
 		}
 		return &simplejson.Json{}, err
 	}
-	defer response.Body.Close()
 	if fs.debug {
 		fmt.Printf("Respone: %#v\n", response)
 	}
-	bits, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return &simplejson.Json{}, err
-	}
-	json, err := simplejson.NewJson(bits)
+	json, err := simplejson.NewFromReader(response.Body)
 	if err != nil {
 		return &simplejson.Json{}, err
 	}
@@ -122,13 +117,13 @@ func (fs *FsOneInterface) GetFundList() ([]Fund, error) {
 	return funds, nil
 }
 
-func (fs *FsOneInterface) FindPerson(name, address string) (string, error) {
+func (fs *FsOneInterface) FindPerson(name, email string) (string, error) {
 	url := fs.basePath + "/v1/People/Search.json"
 
 	json, err := fs.makeRequest(fs.consumer.Get(
 		url, map[string]string{
-			"searchFor": name,
-			"address":   address,
+			"searchFor":     name,
+			"communication": email,
 		}, fs.accessToken,
 	))
 	if err != nil {
@@ -145,41 +140,142 @@ func (fs *FsOneInterface) FindPerson(name, address string) (string, error) {
 	return json.Get("person").GetIndex(0).Get("@id").MustString(""), nil
 }
 
-func (fs *FsOneInterface) CreateHousehold(data interface{}) (string, error) {
-	return fs.createObject("/v1/Households.json", "household", data)
+func (fs *FsOneInterface) CreateHousehold(data *Household) error {
+	return fs.createObject("/v1/households", &data)
 }
 
-func (fs *FsOneInterface) CreatePerson(data interface{}) (string, error) {
-	return fs.createObject("/v1/People.json", "person", data)
+func (fs *FsOneInterface) CreatePerson(data *Person) error {
+	return fs.createObject("/v1/people", &data)
 }
 
-func (fs *FsOneInterface) CreateAddress(data interface{}) (string, error) {
-	return fs.createObject("/v1/Addresses.json", "address", data)
+func (fs *FsOneInterface) CreateAddress(data *Address) error {
+	return fs.createObject("/v1/addresses", &data)
 }
 
-func (fs *FsOneInterface) CreateCommunication(data interface{}) (string, error) {
-	return fs.createObject("/v1/Communications.json", "communication", data)
+func (fs *FsOneInterface) CreateCommunication(data *Communication) error {
+	return fs.createObject("/v1/communications", &data)
 }
 
-func (fs *FsOneInterface) CreateContribution(data interface{}) (string, error) {
-	return fs.createObject("/giving/v1/contributionreceipts.json", "contributionReceipt", data)
+func (fs *FsOneInterface) CreateContribution(data *ContributionReceipt) error {
+	return fs.createObject("/giving/v1/contributionreceipts", &data)
 }
 
-func (fs *FsOneInterface) createObject(requestUrl, objectName string, data interface{}) (string, error) {
-	url := fs.basePath + requestUrl
+func (fs *FsOneInterface) createObject(requestUrl string, data interface{}) error {
+	url := fs.basePath + requestUrl + ".json"
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if fs.debug {
 		fmt.Println("\n" + string(dataBytes))
 	}
-	json, err := fs.makeRequest(fs.consumer.PostJson(
+	r, err := fs.consumer.PostJson(
 		url, string(dataBytes), fs.accessToken,
-	))
-	if err != nil {
-		return "", err
+	)
+	defer r.Body.Close()
+	if fs.debug {
+		fmt.Printf("Respone: %#v\n", r)
 	}
-	return json.GetPath(objectName, "@id").MustString(""), nil
+	bits, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bits, &data)
+	return err
+}
+
+func (fs *FsOneInterface) EditHousehold(id string) (Household, error) {
+	data := Household{}
+	err := fs.editObject("/v1/households", id, &data)
+	return data, err
+}
+
+func (fs *FsOneInterface) EditPerson(id string) (Person, error) {
+	data := Person{}
+	err := fs.editObject("/v1/people", id, &data)
+	return data, err
+}
+
+func (fs *FsOneInterface) EditAddress(id string) (Address, error) {
+	data := Address{}
+	err := fs.editObject("/v1/addresses", id, &data)
+	return data, err
+}
+
+func (fs *FsOneInterface) EditCommunication(id string) (Communication, error) {
+	data := Communication{}
+	err := fs.editObject("/v1/communications", id, &data)
+	return data, err
+}
+
+func (fs *FsOneInterface) EditContribution(id string) (ContributionReceipt, error) {
+	data := ContributionReceipt{}
+	err := fs.editObject("/giving/v1/contributionreceipts", id, &data)
+	return data, err
+}
+
+func (fs *FsOneInterface) editObject(requestUrl, id string, object interface{}) error {
+	url := fs.basePath + requestUrl + "/" + id + "/edit.json"
+
+	r, err := fs.consumer.Get(url, map[string]string{}, fs.accessToken)
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	if fs.debug {
+		fmt.Printf("Respone: %#v\n", r)
+	}
+	bits, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bits, &object)
+
+	return err
+}
+
+func (fs *FsOneInterface) UpdateHousehold(data *Household) error {
+	return fs.updateObject("/v1/households", data.Household.Id, &data)
+}
+
+func (fs *FsOneInterface) UpdatePerson(data *Person) error {
+	return fs.updateObject("/v1/people", data.Person.Id, &data)
+}
+
+func (fs *FsOneInterface) UpdateAddress(data *Address) error {
+	return fs.updateObject("/v1/addresses", data.Address.Id, &data)
+}
+
+func (fs *FsOneInterface) UpdateCommunication(data *Communication) error {
+	return fs.updateObject("/v1/communications", data.Communication.Id, &data)
+}
+
+func (fs *FsOneInterface) UpdateContribution(data *ContributionReceipt) error {
+	return fs.updateObject("/giving/v1/contributionreceipts", data.ContributionReceipt.Id, &data)
+}
+
+func (fs *FsOneInterface) updateObject(requestUrl, id string, data interface{}) error {
+	url := fs.basePath + requestUrl + "/" + id + ".json"
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if fs.debug {
+		fmt.Println("\n" + string(dataBytes))
+	}
+	r, err := fs.consumer.PostJson(
+		url, string(dataBytes), fs.accessToken,
+	)
+	defer r.Body.Close()
+	if fs.debug {
+		fmt.Printf("Respone: %#v\n", r)
+	}
+	bits, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bits, &data)
+	return err
 }

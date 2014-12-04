@@ -128,8 +128,8 @@ type ContributionReceipt struct {
 	ContributionReceipt struct {
 		Primary
 		OldId               string         `json:"@oldID"`
-		AccountReference    string         `json:"@accountReference"`
-		Amount              string         `json:"@amount"`
+		AccountReference    string         `json:"accountReference"`
+		Amount              string         `json:"amount"`
 		Fund                PrimaryAndName `json:"fund"`
 		SubFund             PrimaryAndName `json:"subFund"`
 		PledgeDrive         PrimaryAndName `json:"pledgeDrive"`
@@ -141,22 +141,22 @@ type ContributionReceipt struct {
 		ActivityInstance    Primary        `json:"activityInstance"`
 		ContributionType    PrimaryAndName `json:"contributionType"`
 		ContributionSubType PrimaryAndName `json:"contributionSubType"`
-		ReceivedDate        string         `json:"@receivedDate"`
-		TransmitDate        string         `json:"@transmitDate"`
-		ReturnDate          string         `json:"@returnDate"`
-		RetransmitDate      string         `json:"@retransmitDate"`
-		GlPostDate          string         `json:"@glPostDate"`
-		IsSplit             string         `json:"@isSplit"`
-		AddressVerification string         `json:"@addressVerification"`
-		Memo                string         `json:"@memo"`
-		StatedValue         string         `json:"@statedValue"`
-		TrueValue           string         `json:"@trueValue"`
-		Thank               string         `json:"@thank"`
-		ThankedDate         string         `json:"@thankedDate"`
-		IsMatched           string         `json:"@isMatched"`
-		CreatedDate         string         `json:"@createdDate"`
+		ReceivedDate        string         `json:"receivedDate"`
+		TransmitDate        string         `json:"transmitDate"`
+		ReturnDate          string         `json:"returnDate"`
+		RetransmitDate      string         `json:"retransmitDate"`
+		GlPostDate          string         `json:"glPostDate"`
+		IsSplit             string         `json:"isSplit"`
+		AddressVerification string         `json:"addressVerification"`
+		Memo                string         `json:"memo"`
+		StatedValue         string         `json:"statedValue"`
+		TrueValue           string         `json:"trueValue"`
+		Thank               string         `json:"thank"`
+		ThankedDate         string         `json:"thankedDate"`
+		IsMatched           string         `json:"isMatched"`
+		CreatedDate         string         `json:"createdDate"`
 		CreatedByPerson     Primary        `json:"createdByPerson"`
-		LastUpdatedDate     string         `json:"@lastUpdatedDate"`
+		LastUpdatedDate     string         `json:"lastUpdatedDate"`
 		LastUpdatedByPerson Primary        `json:"lastUpdatedByPerson"`
 	} `json:"contributionReceipt"`
 }
