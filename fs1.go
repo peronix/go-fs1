@@ -25,6 +25,12 @@ type Fund struct {
 	Name string
 }
 
+type Comm struct {
+	Id    string
+	Type  string
+	Value string
+}
+
 func NewFsOneInterface(consumerKey, consumerSecret, consumerCode, callbackUrl string, debug bool) (fs FsOneInterface) {
 	fs.debug = debug
 	fs.callbackUrl = callbackUrl
@@ -96,6 +102,32 @@ func (fs *FsOneInterface) GetAccessToken(verificationCode string) (string, strin
 	return token.Token, token.Secret, nil
 }
 
+func (fs *FsOneInterface) GetCommList(personId string) ([]Comm, error) {
+	url := fs.basePath + "/giving/v1/people/" + personId + "/communications.json"
+
+	json, err := fs.makeRequest(fs.consumer.Get(
+		url, map[string]string{}, fs.accessToken,
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	comms := make([]Comm, 0)
+	json.GetPath("communications", "communication").ArrayEach(func(v *simplejson.Json) {
+		commType := "email"
+		if v.GetPath("communicationType", "@id").MustString("") == "1" {
+			commType = "phone"
+		}
+		comms = append(comms, Comm{
+			Id:    v.Get("@id").MustString(""),
+			Type:  commType,
+			Value: v.Get("communicationValue").MustString(""),
+		})
+	})
+
+	return comms, nil
+}
+
 func (fs *FsOneInterface) GetFundList() ([]Fund, error) {
 	url := fs.basePath + "/giving/v1/funds.json"
 
@@ -115,6 +147,24 @@ func (fs *FsOneInterface) GetFundList() ([]Fund, error) {
 	})
 
 	return funds, nil
+}
+
+func (fs *FsOneInterface) GetAddressIdList(personId string) ([]string, error) {
+	url := fs.basePath + "/v1/people/" + personId + "/Addresses"
+
+	json, err := fs.makeRequest(fs.consumer.Get(
+		url, map[string]string{}, fs.accessToken,
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	addresses := make([]string, 0)
+	json.GetPath("addresses", "address").ArrayEach(func(v *simplejson.Json) {
+		addresses = append(addresses, v.Get("@id").MustString(""))
+	})
+
+	return addresses, nil
 }
 
 func (fs *FsOneInterface) FindPerson(name, email string) (string, error) {
@@ -138,6 +188,41 @@ func (fs *FsOneInterface) FindPerson(name, email string) (string, error) {
 	}
 
 	return json.Get("person").GetIndex(0).Get("@id").MustString(""), nil
+}
+
+func (fs *FsOneInterface) NewHousehold() Household {
+	obj := Household{}
+	return obj
+}
+
+func (fs *FsOneInterface) NewPerson() Person {
+	obj := Person{}
+	obj.Person.Status.Id = "1"
+	obj.Person.IsAuthorized = "true"
+	return obj
+}
+
+func (fs *FsOneInterface) NewAddress() Address {
+	obj := Address{}
+	obj.Address.AddressType.Id = "1"
+	obj.Address.USPSVerified = "false"
+	return obj
+}
+
+func (fs *FsOneInterface) NewCommunication() Communication {
+	obj := Communication{}
+	obj.Communication.CommunicationType.Id = "4"
+	obj.Communication.CommunicationGeneralType = "Email"
+	return obj
+}
+
+func (fs *FsOneInterface) NewContribution() ContributionReceipt {
+	obj := ContributionReceipt{}
+	obj.ContributionReceipt.ContributionType.Id = "4"
+	obj.ContributionReceipt.IsSplit = "false"
+	obj.ContributionReceipt.AddressVerification = "false"
+	obj.ContributionReceipt.Thank = "false"
+	return obj
 }
 
 func (fs *FsOneInterface) CreateHousehold(data *Household) error {
